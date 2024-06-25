@@ -4,6 +4,8 @@ import App from './App.vue'
 import { createRouter, createWebHashHistory } from 'vue-router'
 // Vuex
 import { createStore } from 'vuex'
+//UUID
+import { v4 as uuidv4 } from 'uuid';
 
 import Login from './components/Login.vue'
 import Home from './components/Home.vue'
@@ -26,7 +28,8 @@ const store = createStore({
     },
     mutations: {
         saveUserId(state, newUser) {
-            state.userId = newUser
+            let genUUID = uuidv4();
+            state.userId = newUser + '-' + genUUID
             localStorage.setItem('store', JSON.stringify(state))
         }
     }

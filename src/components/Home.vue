@@ -14,6 +14,14 @@
         </select>
     </div>
 
+    <div>
+        <h4>Choose currency</h4>
+        <select v-model="selectedCurrency" @change="fetchCrypto">
+            <option value="usd">USD</option>
+            <option value="ars">ARS</option>
+        </select>
+    </div>
+
     <div v-if="errorMsg">{{ errorMsg }}</div>
     <table>
         <thead>
@@ -42,6 +50,7 @@ export default {
     data() {
         return {
             selectedCrypto: 'btc',
+            selectedCurrency: 'ars',
             exchanges: {},
             errorMsg: null
         }
@@ -51,7 +60,7 @@ export default {
     },
     methods: {
         async fetchCrypto() {
-            let endpoint = `https://criptoya.com/api/${this.selectedCrypto}/ars/0.5`
+            let endpoint = `https://criptoya.com/api/${this.selectedCrypto}/${this.selectedCurrency}/0.5`
             try {
                 const response = await axios.get(endpoint)
                 this.exchanges = response.data

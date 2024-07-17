@@ -10,4 +10,9 @@ export default {
 }
 </script>
 
-<style scoped></style>
+<style>
+body {
+  background-color: rgb(32, 32, 32);
+  color: whitesmoke;
+}
+</style>

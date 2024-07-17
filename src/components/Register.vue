@@ -1,12 +1,12 @@
 <template>
     <div>
-        <p>Login</p>
-        <form @submit.prevent="login">
+        <p>Register</p>
+        <form @submit.prevent="register">
             <input v-model="userId" type="text" required><br>
             <input v-model="password" type="text" required><br>
-            <button type="submit">Login</button>
+            <button type="submit">Sign up</button>
         </form>
-        <button @click="toRegisterScreen">Create an account</button>
+        <button @click="toLoginScreen">I have an account</button>
         <div v-if="errorMsgs.length">
             <ul>
                 <li v-for="(error, index) in errorMsgs" :key="index">{{ error }}</li>
@@ -20,7 +20,7 @@ import axios from 'axios';
 
 
 export default {
-    name: 'Login',
+    name: 'Register',
     data() {
         return {
             userId: '',
@@ -29,7 +29,11 @@ export default {
         }
     },
     methods: {
-        login() {
+        async register() {
+            const authorized = await this.verifyUser()
+            if (!authorized) {
+                return
+            }
             this.errorMsgs = []
             if (this.userId.length < 4) {
                 this.errorMsgs.push("Minimum 4 characters")
@@ -40,11 +44,12 @@ export default {
                 this.$router.push('/home')
             }
         },
-        verifyUser() {
-            //call db to verify if user and password are correct
+        async verifyUser() {
+            return true
+            //call db to verify if user already exists
         },
-        toRegisterScreen() {
-            this.$router.push('/register')
+        toLoginScreen() {
+            this.$router.push('/')
         }
     },
 }

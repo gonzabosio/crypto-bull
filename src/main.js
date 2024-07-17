@@ -1,21 +1,23 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 //Router
-import { createRouter, createWebHashHistory } from 'vue-router'
+import { createRouter, createWebHistory } from 'vue-router'
 // Vuex
 import { createStore } from 'vuex'
 //UUID
 import { v4 as uuidv4 } from 'uuid';
 
 import Login from './components/Login.vue'
+import Register from './components/Register.vue'
 import Home from './components/Home.vue'
 
 const routes = [
     { path: '/', component: Login },
+    { path: '/register', component: Register },
     { path: '/home', component: Home }
 ]
 const router = createRouter({
-    history: createWebHashHistory(),
+    history: createWebHistory(),
     routes
 })
 

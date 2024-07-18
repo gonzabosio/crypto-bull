@@ -1,8 +1,9 @@
 <template>
 
     <div>
-        <p>Menu</p>
+        <h1>CryptoBull</h1>
         <p>Hello, {{ this.$store.state.user.username }}</p>
+        <button @click="toTransactions">Transactions</button>
     </div>
     <button @click="signOut">Sign out</button>
 
@@ -75,6 +76,9 @@ export default {
         },
         sell(exchange,bid) {
             console.log("Selling in ", exchange, "for", bid)
+        },
+        toTransactions() {
+            this.$router.push('/transactions')
         },
         signOut() {
             this.$router.replace('/')

@@ -50,13 +50,14 @@ export default {
             }).then((response) => {
                 let userId = response.data.user_id
                 let username = response.data.username
+
                 this.$store.commit('saveUser', {
                     id: userId,
                     username: username
                 })
                 this.$router.replace('/home')
-            }).catch(function(err) {
-                this.errorMsgs.push('Verification failed | '+err)
+            }).catch((err) => {
+                this.errorMsgs.push('Verification failed -'+err)
             })
         },
         toRegisterScreen() {

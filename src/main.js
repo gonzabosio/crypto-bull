@@ -8,11 +8,13 @@ import { createStore } from 'vuex'
 import Login from './components/Login.vue'
 import Register from './components/Register.vue'
 import Home from './components/Home.vue'
+import Transactions from './components/Transactions.vue'
 
 const routes = [
     { path: '/', component: Login },
     { path: '/register', component: Register },
-    { path: '/home', component: Home }
+    { path: '/home', component: Home },
+    { path: '/transactions', component: Transactions }
 ]
 const router = createRouter({
     history: createWebHistory(),

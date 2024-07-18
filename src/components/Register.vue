@@ -45,7 +45,6 @@ export default {
                 password: this.password
             }, {
                 headers: {
-                    'Content-Type': 'application/json',
                     'x-apikey': this.API_KEY
                 }
             }).then((response) => {
@@ -56,7 +55,7 @@ export default {
                     username: username
                 })
                 this.$router.replace('/home')
-            }).catch(function(err) {
+            }).catch((err) => {
                 this.errorMsgs.push('Sign up failed'+err.message)
             })
         },

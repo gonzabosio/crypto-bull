@@ -2,8 +2,9 @@
 
     <div>
         <p>Menu</p>
-        <p>User ID: {{ this.$store.state.userId }}</p>
+        <p>Hello, {{ this.$store.state.user.username }}</p>
     </div>
+    <button @click="signOut">Sign out</button>
 
     <div>
         <h4>Choose crypto</h4>
@@ -34,8 +35,8 @@
         <tbody>
             <tr v-for="(exchange, name) in exchanges" :key="name">
                 <td>{{ name }}</td>
-                <td>{{ exchange.ask }} <div><button @click="buy(name, exchange.ask)">Buy</button></div></td>
-                <td>{{ exchange.bid }} <div><button @click="sell(name, exchange.bid)">Sell</button></div></td>
+                <td>$ {{ exchange.ask }} <div><button @click="buy(name, exchange.ask)">Buy</button></div></td>
+                <td>$ {{ exchange.bid }} <div><button @click="sell(name, exchange.bid)">Sell</button></div></td>
             </tr>
         </tbody>
     </table>
@@ -74,6 +75,9 @@ export default {
         },
         sell(exchange,bid) {
             console.log("Selling in ", exchange, "for", bid)
+        },
+        signOut() {
+            this.$router.replace('/')
         }
     }
 }

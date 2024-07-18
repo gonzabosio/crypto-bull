@@ -1,6 +1,6 @@
 <template>
     <div>
-        <p>Register</p>
+        <p>Create your account</p>
         <form @submit.prevent="register">
             <input v-model="userId" type="text" required><br>
             <input v-model="password" type="text" required><br>
@@ -18,38 +18,50 @@
 <script>
 import axios from 'axios';
 
-
 export default {
     name: 'Register',
     data() {
         return {
             userId: '',
             password: '',
-            errorMsgs: []
+            errorMsgs: [],
+            API_KEY: import.meta.env.VITE_API_KEY
         }
     },
     methods: {
-        async register() {
-            const authorized = await this.verifyUser()
-            if (!authorized) {
-                return
-            }
+        register() {
             this.errorMsgs = []
             if (this.userId.length < 4) {
                 this.errorMsgs.push("Minimum 4 characters")
-            } else if (this.userId.length > 8) {
-                this.errorMsgs.push("Maximum 8 characters")
+            } else if (this.userId.length > 12) {
+                this.errorMsgs.push("Maximum 12 characters")
             } else {
-                this.$store.commit('saveUserId', this.userId)
-                this.$router.push('/home')
+                this.verifyUser()
             }
         },
-        async verifyUser() {
-            return true
-            //call db to verify if user already exists
+        verifyUser() {
+            axios.post('https://crypto-users.onrender.com/register', {
+                username: this.userId,
+                password: this.password
+            }, {
+                headers: {
+                    'Content-Type': 'application/json',
+                    'x-apikey': this.API_KEY
+                }
+            }).then((response) => {
+                let userId = response.data.user_id
+                let username = response.data.username
+                this.$store.commit('saveUser', {
+                    id: userId,
+                    username: username
+                })
+                this.$router.replace('/home')
+            }).catch(function(err) {
+                this.errorMsgs.push('Sign up failed'+err.message)
+            })
         },
         toLoginScreen() {
-            this.$router.push('/')
+            this.$router.replace('/')
         }
     },
 }

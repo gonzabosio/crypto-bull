@@ -1,9 +1,9 @@
 <template>
     <div>
-        <p>Login</p>
+        <p>Sign in</p>
         <form @submit.prevent="login">
-            <input v-model="userId" type="text" required><br>
-            <input v-model="password" type="text" required><br>
+            <label>Username<input v-model="username" type="text" required/></label><br>
+            <label>Password<input v-model="password" type="text" required></label><br>
             <button type="submit">Login</button>
         </form>
         <button @click="toRegisterScreen">Create an account</button>
@@ -18,30 +18,47 @@
 <script>
 import axios from 'axios';
 
-
 export default {
     name: 'Login',
     data() {
         return {
-            userId: '',
+            username: '',
             password: '',
-            errorMsgs: []
+            errorMsgs: [],
+            API_KEY: import.meta.env.VITE_API_KEY
         }
     },
     methods: {
         login() {
             this.errorMsgs = []
-            if (this.userId.length < 4) {
+            if (this.username.length < 4) {
                 this.errorMsgs.push("Minimum 4 characters")
-            } else if (this.userId.length > 8) {
-                this.errorMsgs.push("Maximum 8 characters")
+            } else if (this.username.length > 12) {
+                this.errorMsgs.push("Maximum 12 characters")
             } else {
-                this.$store.commit('saveUserId', this.userId)
-                this.$router.push('/home')
+                this.verifyUser()
             }
         },
         verifyUser() {
-            //call db to verify if user and password are correct
+            axios.post('https://crypto-users.onrender.com/login', {
+                username: this.username,
+                password: this.password
+            }, {
+                headers: {
+                    'x-apikey': this.API_KEY
+                }
+            }).then((response) => {
+                let userId = response.data.user_id
+                let username = response.data.username
+
+                this.$store.commit('saveUser', {
+                    id: userId,
+                    username: username
+                })
+                this.$router.replace('/home')
+            }).catch((err) => {
+                this.errorMsgs.push('User verification failed -'+err)
+            })
         },
         toRegisterScreen() {
             this.$router.push('/register')

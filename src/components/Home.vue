@@ -24,8 +24,14 @@
         </select>
     </div>
 
+    <div>
+        <h4>Amount</h4>
+        <input type="number" min="0" step="0.01" v-model="amount" required>
+        <button @click="fetchCrypto">Set</button>
+    </div>
+
     <div v-if="errorMsg">{{ errorMsg }}</div>
-    <table>
+    <table v-else>
         <thead>
             <tr>
                 <th>Exchange</th>
@@ -36,8 +42,8 @@
         <tbody>
             <tr v-for="(exchange, name) in exchanges" :key="name">
                 <td>{{ name }}</td>
-                <td>$ {{ exchange.ask }} <div><button @click="buy(name, exchange.ask)">Buy</button></div></td>
-                <td>$ {{ exchange.bid }} <div><button @click="sell(name, exchange.bid)">Sell</button></div></td>
+                <td>$ {{ exchange.ask }} <div><button v-if="exchange.ask > 0" @click="buy(exchange.ask)">Buy</button></div></td>
+                <td>$ {{ exchange.bid }} <div><button v-if="exchange.bid > 0" @click="sell(exchange.bid)">Sell</button></div></td>
             </tr>
         </tbody>
     </table>
@@ -54,7 +60,9 @@ export default {
             selectedCrypto: 'btc',
             selectedCurrency: 'ars',
             exchanges: {},
-            errorMsg: null
+            amount: 1,
+            errorMsg: null,
+            API_KEY: import.meta.env.VITE_API_KEY
         }
     },
     created() {
@@ -62,7 +70,7 @@ export default {
     },
     methods: {
         async fetchCrypto() {
-            let endpoint = `https://criptoya.com/api/${this.selectedCrypto}/${this.selectedCurrency}/0.5`
+            let endpoint = `https://criptoya.com/api/${this.selectedCrypto}/${this.selectedCurrency}/${this.amount}`
             try {
                 const response = await axios.get(endpoint)
                 this.exchanges = response.data
@@ -71,18 +79,73 @@ export default {
                 this.errorMsg = err.message
             }
         },
-        buy(exchange,ask) {
-            console.log("Buying in ", exchange, "for", ask)
+        buy(ask) {
+            const date = getDate()
+            const userId = this.$store.state.user.id
+            axios.post(`https://crypto-users.onrender.com/actions`,
+                {
+                    action: "Purchase",
+                    crypto_code: this.selectedCrypto,
+                    currency: this.selectedCurrency,
+                    crypto_amount: 1,
+                    money: parseFloat(ask),
+                    performed_at: date,
+                    user_id: userId
+                }, 
+                {
+                    headers: {
+                        'x-apikey': this.API_KEY
+                    }
+                }).then(() => {
+                console.log('Successful purchase')
+            }).catch((err) => {
+                console.log('Purchase failed: '+err)
+            })
         },
-        sell(exchange,bid) {
-            console.log("Selling in ", exchange, "for", bid)
+        sell(bid) {
+            const date = getDate()
+            const userId = this.$store.state.user.id
+            axios.post(`https://crypto-users.onrender.com/actions`,
+                {
+                    action: "Sell",
+                    crypto_code: this.selectedCrypto,
+                    currency: this.selectedCurrency,
+                    crypto_amount: 1,
+                    money: parseFloat(bid),
+                    performed_at: date,
+                    user_id: userId
+                }, 
+                {
+                    headers: {
+                        'x-apikey': this.API_KEY
+                    }
+                }).then((response) => {
+                console.log('Successful sale '+ response.status.toString())
+            }).catch((err) => {
+                console.log('Failed sale: '+err)
+            })
         },
         toTransactions() {
             this.$router.push('/transactions')
         },
         signOut() {
+            this.$store.commit('saveUser', {
+                id: null,
+                username: null
+            })
             this.$router.replace('/')
-        }
+        },
     }
+}
+function getDate() {
+    const date = new Date()
+    const pad = (num) => num.toString().padStart(2, '0')
+    const year = date.getFullYear()
+    const month = pad(date.getMonth() + 1)
+    const day = pad(date.getDate())
+    const hours = pad(date.getHours())
+    const minutes = pad(date.getMinutes())
+    const seconds = pad(date.getSeconds())
+    return `${year}-${month}-${day}T${hours}:${minutes}:${seconds}Z`
 }
 </script>

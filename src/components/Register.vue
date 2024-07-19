@@ -2,8 +2,8 @@
     <div>
         <p>Create your account</p>
         <form @submit.prevent="register">
-            <input v-model="userId" type="text" required><br>
-            <input v-model="password" type="text" required><br>
+            <label>Username<input v-model="username" type="text" required></label><br>
+            <label>Password<input v-model="password" type="text" required></label><br>
             <button type="submit">Sign up</button>
         </form>
         <button @click="toLoginScreen">I have an account</button>
@@ -22,7 +22,7 @@ export default {
     name: 'Register',
     data() {
         return {
-            userId: '',
+            username: '',
             password: '',
             errorMsgs: [],
             API_KEY: import.meta.env.VITE_API_KEY
@@ -31,9 +31,9 @@ export default {
     methods: {
         register() {
             this.errorMsgs = []
-            if (this.userId.length < 4) {
+            if (this.username.length < 4) {
                 this.errorMsgs.push("Minimum 4 characters")
-            } else if (this.userId.length > 12) {
+            } else if (this.username.length > 12) {
                 this.errorMsgs.push("Maximum 12 characters")
             } else {
                 this.verifyUser()
@@ -41,7 +41,7 @@ export default {
         },
         verifyUser() {
             axios.post('https://crypto-users.onrender.com/register', {
-                username: this.userId,
+                username: this.username,
                 password: this.password
             }, {
                 headers: {

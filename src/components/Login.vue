@@ -2,8 +2,8 @@
     <div>
         <p>Sign in</p>
         <form @submit.prevent="login">
-            <input v-model="username" type="text" required><br>
-            <input v-model="password" type="text" required><br>
+            <label>Username<input v-model="username" type="text" required/></label><br>
+            <label>Password<input v-model="password" type="text" required></label><br>
             <button type="submit">Login</button>
         </form>
         <button @click="toRegisterScreen">Create an account</button>
@@ -57,7 +57,12 @@ export default {
                 })
                 this.$router.replace('/home')
             }).catch((err) => {
-                this.errorMsgs.push('Verification failed -'+err)
+                if (err.response.status == '404') {
+                    this.errorMsgs.push('User not found')
+                } else {
+                    this.errorMsgs.push('User verification failed - '+err.response.status)
+                }
+                
             })
         },
         toRegisterScreen() {

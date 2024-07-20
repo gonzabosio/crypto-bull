@@ -30,6 +30,7 @@
         <button @click="fetchCrypto">Set</button>
     </div>
 
+    <div v-if="transactionMsg != ''">{{ transactionMsg }}</div>
     <div v-if="errorMsg">{{ errorMsg }}</div>
     <table v-else>
         <thead>
@@ -62,6 +63,7 @@ export default {
             exchanges: {},
             amount: 1,
             errorMsg: null,
+            transactionMsg: '',
             API_KEY: import.meta.env.VITE_API_KEY
         }
     },
@@ -74,6 +76,7 @@ export default {
             try {
                 const response = await axios.get(endpoint)
                 this.exchanges = response.data
+                this.transactionMsg = ''
             }
             catch(err) {
                 this.errorMsg = err.message
@@ -98,32 +101,94 @@ export default {
                     }
                 }).then(() => {
                     window.scrollTo({top: 0, behavior: 'smooth'})
-                    console.log('Successful purchase')
+                    this.transactionMsg = 'Successful purchase'
             }).catch((err) => {
                 console.log('Purchase failed: '+err)
             })
         },
         sell(bid) {
             const date = getDate()
-            const userId = this.$store.state.user.id
-            axios.post(`https://crypto-users.onrender.com/actions`,
-                {
-                    action: "sell",
-                    crypto_code: this.selectedCrypto,
-                    currency: this.selectedCurrency,
-                    crypto_amount: this.amount,
-                    money: parseFloat(bid),
-                    performed_at: date,
-                    user_id: userId
-                }, 
-                {
-                    headers: {
-                        'x-apikey': this.API_KEY
+            axios.get(`https://crypto-users.onrender.com/actions/${this.$store.state.user.id}`, {              
+                headers: {'x-apikey': this.API_KEY}       
+            }).then((response) => {
+                let amountBtc = 0
+                let amountEth = 0
+                let amountUsdt = 0
+                const entries = Object.entries(response.data)
+                for (const [key, value] of entries) {
+                    switch(value.crypto_code) {
+                        case 'btc': {
+                            if (value.action === 'purchase') {
+                                amountBtc += value.crypto_amount
+                            } else {
+                               amountBtc -= value.crypto_amount
+                            }
+                            break
+                        }
+                        case 'eth': {
+                            if (value.action === 'purchase') {
+                                amountEth += value.crypto_amount
+                            } else {
+                                amountEth -= value.crypto_amount
+                            }
+                            break
+                        }
+                        case 'usdt': {
+                            if (value.action === 'purchase') {
+                                amountUsdt += value.crypto_amount
+                            } else {
+                                amountUsdt -= value.crypto_amount
+                            }
+                            break;
+                        }
                     }
-                }).then(() => {
-                console.log('Successful sale')
+                }
+                if (this.selectedCrypto === 'btc') {
+                    if (amountBtc < this.amount) {
+                        window.scrollTo({top: 0, behavior: 'smooth'})
+                        this.transactionMsg = 'You do not have enough bitcoin to sell'
+                    } else {
+                        this.sellCrypto(bid, date)
+                    }
+                } else if (this.selectedCrypto === 'eth') {
+                    if (amountEth < this.amount) {
+                        window.scrollTo({top: 0, behavior: 'smooth'})
+                        this.transactionMsg = 'You do not have enough ethereum to sell'
+                    } else {
+                        this.sellCrypto(bid, date)
+                    }
+                } else {
+                    if (amountUsdt < this.amount) {
+                        window.scrollTo({top: 0, behavior: 'smooth'})
+                        this.transactionMsg = 'You do not have enough usdt to sell'
+                    } else {
+                        this.sellCrypto(bid, date)
+                    }
+                }
+            }).catch((error) => {
+                this.transactionMsg = error
+            })
+        },
+        sellCrypto(bid, date) {
+            axios.post(`https://crypto-users.onrender.com/actions`,
+            {
+                action: "sell",
+                crypto_code: this.selectedCrypto,
+                currency: this.selectedCurrency,
+                crypto_amount: this.amount,
+                money: parseFloat(bid),
+                performed_at: date,
+                user_id: this.$store.state.user.id
+            }, 
+            {
+                headers: {
+                    'x-apikey': this.API_KEY
+                }
+            }).then(() => {
+                window.scrollTo({top: 0, behavior: 'smooth'})
+                this.transactionMsg = 'Successful sale'
             }).catch((err) => {
-                console.log('Failed sale: '+err)
+                this.transactionMsg = 'Sale failed'+ err
             })
         },
         toTransactions() {

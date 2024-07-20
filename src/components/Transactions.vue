@@ -22,23 +22,35 @@
                     <td>{{ transaction.currency }}</td>
                     <td>$ {{ transaction.money }}</td>
                     <td>{{ transaction.performed_at }}</td>
-                    <button @click="showForm(transaction.activity_id)">Edit</button>
+                    <button @click="showForm(transaction.activity_id, transaction.action, transaction.currency, transaction.crypto_code)">Edit</button>
                     <button @click="deleteAction(transaction.activity_id)">Delete</button>
                 </tr>
             </tbody>
         </table>
     </div>
-    <form v-else-if="showEditForm && !showSummary" @submit.prevent="saveEdit">
+    <div v-else-if="showEditForm && !showSummary">
         <h4>Edition</h4>
-        <p>You can leave any text box empty</p>
-        <label>Action<input type="text" v-model="form.action"/></label><br>
-        <label>Crypto<input type="text" v-model="form.crypto"></label><br>
-        <label>Amount<input type="text" v-model="form.amount"></label><br>
-        <label>Currency<input type="text" v-model="form.currency"></label><br>
-        <label>Money<input type="text" v-model="form.money"></label><br>
-        <button type="button" @click="cancelEdit">Cancel</button>
-        <button type="submit">Save</button>
-    </form>
+        <p>Empty fields allowed</p>
+        <form @submit.prevent="saveEdit">
+            <label>Action<input :placeholder="editionForm.action" readonly></label><br>
+            <label>Crypto<select v-model="editionForm.crypto">
+                <option value="btc">Bitcoin</option>
+                <option value="eth">Ethereum</option>
+                <option value="usdt">USDT</option>
+            </select></label><br>
+            <label>Amount<input type="number" step="0.01" min="0" v-model="editionForm.amount"></label><br>
+            <label>Currency<select v-model="editionForm.currency">
+                <option value="usd">USD</option>
+                <option value="ars">ARS</option>
+            </select></label><br>
+            <label>Money<input type="number" step="0.01" min="0" v-model="editionForm.money"></label><br>
+            <button type="button" @click="cancelEdit">Cancel</button>
+            <button type="submit">Save</button>
+        </form>
+        <p v-if="formError != ''">{{ formError }}</p>
+    </div>
+
+    
     <table v-if="showSummary">
         <thead>
             <tr>
@@ -82,13 +94,14 @@ export default {
             err: '',
             showEditForm: false,
             actionId: '',
-            form: {
+            editionForm: {
                 action: null,
                 crypto: null,
                 currency: null,
                 amount: null,
                 money: null
             },
+            formError: '',
             showSummary: false,
             summary: {
                 bid: {btc: 0,eth: 0,usdt: 0},
@@ -121,48 +134,39 @@ export default {
                 this.err = error
             })
         },
-        showForm(actionID) {
+        showForm(actionID, action, currency, cryptoCode) {
             this.actionId = actionID
+            this.editionForm.action = action
+            this.editionForm.currency = currency
+            this.editionForm.crypto = cryptoCode
             this.showEditForm = true
         },
         saveEdit() {
-            if (this.form.currency == "") {
-                this.form.currency = null
-            }
-            if (this.form.action != null && this.form.action != 'purchase' && this.form.action != 'sell') {
-                this.err = "You can edit the action only writing 'purchase' or 'sell'"
-            } else {
                 axios.patch(`https://crypto-users.onrender.com/actions/${this.actionId}`, {
-                action: this.form.action,
-                crypto_code: this.form.crypto,
-                currency: this.form.currency,
-                crypto_amount: parseFloat(this.form.amount),
-                money: parseFloat(this.form.money)
+                action: this.editionForm.action,
+                crypto_code: this.editionForm.crypto,
+                currency: this.editionForm.currency,
+                crypto_amount: parseFloat(this.editionForm.amount),
+                money: parseFloat(this.editionForm.money)
             },  {
                     headers: {'x-apikey': this.API_KEY}
                 }).then(() => {
-                console.log('Action edited successfully')
                 this.getTransactions()
+                this.editionForm.money = null
+                this.editionForm.amount = null
                 this.showEditForm = false
-                this.err = ''
-                this.form.action = null
-                this.form.crypto = null
-                this.form.currency = null
-                this.form.amount = null
-                this.form.money = null
             }).catch((err) => {
-                console.log('Action edition failed: '+err)
+                this.formError = 'Edition failed - '+ err
             })
-            }
         },
         cancelEdit() {
             this.showEditForm = false
-            this.err = ''
-            this.form.action = null
-            this.form.crypto = null
-            this.form.currency = null
-            this.form.amount = null
-            this.form.money = null
+            this.formError = ''
+            this.editionForm.action = null
+            this.editionForm.crypto = null
+            this.editionForm.currency = null
+            this.editionForm.amount = null
+            this.editionForm.money = null
         },
         deleteAction(actionId) {
             axios.delete(`https://crypto-users.onrender.com/actions/${actionId}`, {
@@ -172,7 +176,7 @@ export default {
             }).then(() => {
                 this.getTransactions()
             }).catch((err) => {
-                console.log('Delete function failed: '+err)
+                this.err = 'Action delete failed -'+err
             })
         },
         async calculate(transactions) {
@@ -248,7 +252,6 @@ export default {
                             } else {
                                 this.summary.money.usdt += value.money
                             }
-                            this.summary.money.usdt += value.money
                         } else {
                             this.summary.amount.usdt -= value.crypto_amount
                             if (value.currency === 'usd') {

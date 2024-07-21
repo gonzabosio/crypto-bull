@@ -5,8 +5,8 @@
     </div>
     <div id="transaction-content">
         <h1>History</h1>
-        <div v-if="err != ''">{{ err }}</div>
         <label v-if="!showEditForm" id="summary-lbl">Summary<input v-model="showSummary" type="checkbox"/></label>
+        <p v-if="err != ''">{{ err }}</p>
         <div v-if="!showEditForm && !showSummary && !err != ''">
             <table class="history-table">
                 <thead>

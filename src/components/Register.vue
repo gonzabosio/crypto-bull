@@ -65,7 +65,11 @@ export default {
                 this.$router.replace('/home')
             }).catch((err) => {
                 this.errorMsgs = []
-                this.errorMsgs.push('Sign up failed'+ err.message)
+                if (err.response.status == '409') {
+                    this.errorMsgs.push(err.response.data)
+                } else {
+                    this.errorMsgs.push('Sign up failed'+ err.message)
+                }
             })
         },
         toLoginScreen() {

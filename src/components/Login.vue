@@ -67,7 +67,9 @@ export default {
             }).catch((err) => {
                 this.msg = []
                 if (err.response.status == '404') {
-                    this.msg.push('User not found')
+                    this.msg.push(err.response.data)
+                } else if (err.response.status == '401') {
+                    this.msg.push(err.response.data)
                 } else {
                     this.msg.push('User verification failed - '+'Error: '+err.response.status)
                 }

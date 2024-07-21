@@ -70,6 +70,15 @@ export default {
     created() {
         this.fetchCrypto()
     },
+    watch: {
+        amount() {
+            if(this.amount == 0) {
+                this.errorMsg = 'Insert an amount'
+            } else {
+                this.fetchCrypto()
+            }
+        }
+    },
     methods: {
         async fetchCrypto() {
             let endpoint = `https://criptoya.com/api/${this.selectedCrypto}/${this.selectedCurrency}/${this.amount}`
@@ -104,7 +113,7 @@ export default {
                     window.scrollTo({top: 0, behavior: 'smooth'})
                     this.transactionMsg = 'Successful purchase'
             }).catch((err) => {
-                console.log('Purchase failed: '+err)
+                this.transactionMsg = 'Purchase failed: '+err.response.data
             })
         },
         sell(bid) {
@@ -146,21 +155,18 @@ export default {
                 }
                 if (this.selectedCrypto === 'btc') {
                     if (amountBtc < this.amount) {
-                        window.scrollTo({top: 0, behavior: 'smooth'})
                         this.errorMsg = 'You do not have enough bitcoin to sell'
                     } else {
                         this.sellCrypto(bid, date)
                     }
                 } else if (this.selectedCrypto === 'eth') {
                     if (amountEth < this.amount) {
-                        window.scrollTo({top: 0, behavior: 'smooth'})
                         this.errorMsg = 'You do not have enough ethereum to sell'
                     } else {
                         this.sellCrypto(bid, date)
                     }
                 } else {
                     if (amountUsdt < this.amount) {
-                        window.scrollTo({top: 0, behavior: 'smooth'})
                         this.errorMsg = 'You do not have enough usdt to sell'
                     } else {
                         this.sellCrypto(bid, date)

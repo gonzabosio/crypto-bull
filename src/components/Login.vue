@@ -73,7 +73,6 @@ export default {
                 } else {
                     this.msg.push('User verification failed - '+'Error: '+err.response.status)
                 }
-                
             })
         },
         toRegisterScreen() {
